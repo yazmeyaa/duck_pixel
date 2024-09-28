@@ -1,34 +1,34 @@
-import './style.css'
+import "./style.css";
 
 const PIXEL_SIZE = 50;
-const PICTURE_START_POINT: Point = { x: 354, y: 752 }
+const PICTURE_START_POINT: Point = { x: 354, y: 752 };
 
 type Point = {
   x: number;
   y: number;
-}
+};
 
 type Color = {
-  r: number
-  g: number
-  b: number
-  a: number
-}
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+};
 
 class Pixel {
   constructor(
     public coordinates: Point,
     public color: Color,
-  ) { }
+  ) {}
 }
 
 type PixelsArray = Pixel[][];
 
 function imageToPixelsArray(img: HTMLImageElement): PixelsArray {
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
 
-  if (!context) throw new Error('Canvas context is not available.');
+  if (!context) throw new Error("Canvas context is not available.");
 
   canvas.width = img.width;
   canvas.height = img.height;
@@ -69,12 +69,12 @@ class Application {
   private isDragging: boolean = false;
   private dragStart: Point = { x: 0, y: 0 };
   private lastTranslate: Point = { x: 0, y: 0 };
-  private activePixel: Pixel | null = null; // Состояние для активного пикселя
+  private activePixel: Pixel | null = null;
   public onActivePixelChange: ((pixel: Pixel | null) => any) | null = null;
 
   constructor(image: HTMLImageElement) {
     const canvas = this.createCanvas();
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Cannot create Canvas context. Enable Javascript or Hardware acceleration if it's disabled.");
     this.canvas = canvas;
     this.ctx = ctx;
@@ -86,7 +86,7 @@ class Application {
   }
 
   private createCanvas(): HTMLCanvasElement {
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.style.cssText = `
       display: block;
       padding: 0px;
@@ -115,34 +115,27 @@ class Application {
   private resizeCanvas(): void {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
-    this.canvas.style.width = '100vw';
-    this.canvas.style.height = '100vh';
+    this.canvas.style.width = "100vw";
+    this.canvas.style.height = "100vh";
   }
 
   private applyListeners(): void {
-    window.addEventListener('resize', this.resizeCanvas.bind(this));
-
-    // Слушатель для мышиных движений и зума
-    this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-    this.canvas.addEventListener('wheel', this.onWheel.bind(this));
-
-    // Слушатели для перетаскивания
-    this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-    this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
-    this.canvas.addEventListener('mouseleave', this.onMouseUp.bind(this));
-
-    // Сенсорные слушатели для перетаскивания на сенсорных устройствах
-    this.canvas.addEventListener('touchstart', this.onTouchStart.bind(this));
-    this.canvas.addEventListener('touchmove', this.onTouchMove.bind(this));
-    this.canvas.addEventListener('touchend', this.onTouchEnd.bind(this));
+    window.addEventListener("resize", this.resizeCanvas.bind(this));
+    this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
+    this.canvas.addEventListener("wheel", this.onWheel.bind(this));
+    this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
+    this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
+    this.canvas.addEventListener("mouseleave", this.onMouseUp.bind(this));
+    this.canvas.addEventListener("touchstart", this.onTouchStart.bind(this));
+    this.canvas.addEventListener("touchmove", this.onTouchMove.bind(this));
+    this.canvas.addEventListener("touchend", this.onTouchEnd.bind(this));
   }
 
-  // Обработка события перемещения мыши
   private onMouseMove(event: MouseEvent): void {
     if (this.isDragging) {
-      this.onMouseMoveDrag(event); // Перемещение камеры
+      this.onMouseMoveDrag(event);
     } else {
-      this.detectActivePixel(event); // Определение активного пикселя
+      this.detectActivePixel(event);
     }
   }
 
@@ -164,7 +157,6 @@ class Application {
     this.isDragging = false;
   }
 
-  // Сенсорное управление для перетаскивания
   private onTouchStart(event: TouchEvent): void {
     if (event.touches.length === 1) {
       const touch = event.touches[0];
@@ -189,7 +181,6 @@ class Application {
     this.isDragging = false;
   }
 
-  // Определение активного пикселя
   private detectActivePixel(event: MouseEvent): void {
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = (event.clientX - rect.left - this.translate.x) / this.scale;
@@ -199,11 +190,11 @@ class Application {
     const pixelY = Math.floor(mouseY / PIXEL_SIZE);
 
     if (pixelX >= 0 && pixelY >= 0 && pixelY < this.field.length && pixelX < this.field[0].length) {
-      this.activePixel = this.field[pixelY][pixelX]; // Установка активного пикселя
+      this.activePixel = this.field[pixelY][pixelX];
       this.onActivePixelChange?.(this.activePixel);
 
     } else {
-      this.activePixel = null; // Сброс активного пикселя, если мышь не над картинкой
+      this.activePixel = null;
       this.onActivePixelChange?.(null);
     }
 
@@ -223,7 +214,6 @@ class Application {
     this.render();
   }
 
-  // Отрисовка изображения и активного пикселя
   private drawImage(): void {
     for (const row of this.field) {
       for (const pixel of row) {
@@ -232,10 +222,9 @@ class Application {
       }
     }
 
-    // Рисуем рамку вокруг активного пикселя
     if (this.activePixel) {
       const { x, y } = this.activePixel.coordinates;
-      this.ctx.strokeStyle = 'rgba(255, 0, 255, 1)';
+      this.ctx.strokeStyle = "rgba(255, 0, 255, 1)";
       this.ctx.lineWidth = 2;
       this.ctx.strokeRect(x * PIXEL_SIZE, y * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
     }
@@ -251,7 +240,7 @@ class Application {
     this.drawImage();
   }
 
-  private update() { }
+  private update() {}
 
   public play() {
     this.update();
@@ -261,27 +250,24 @@ class Application {
 }
 
 const img = new Image();
-img.src = '/image.png'
+img.src = "https://yazmeyaa.github.io/duck_pixel/image.png";
 
-img.addEventListener('load', () => {
+img.addEventListener("load", () => {
   const app = new Application(img);
   app.play();
   app.appendCanvas(document.body);
-  const pixelInfo = document.getElementById('pixel_info') as HTMLDivElement;
+  const pixelInfo = document.getElementById("pixel_info") as HTMLDivElement;
   app.onActivePixelChange = (px) => {
-    pixelInfo.innerHTML = '';
+    pixelInfo.innerHTML = "";
     if (!px) {
-      pixelInfo.innerHTML = '';
+      pixelInfo.innerHTML = "";
       return;
     }
-    const pos = document.createElement('span')
-    pos.innerText = `Coordinates: (${px.coordinates.x + PICTURE_START_POINT.x}:${px.coordinates.y + PICTURE_START_POINT.y})`
-    pixelInfo.appendChild(pos)
-
-    pixelInfo.appendChild(document.createElement('br'))
-
-    const color = document.createElement('span');
-    color.innerText = `rgb(${px.color.r},${px.color.g},${px.color.b})`
-    pixelInfo.appendChild(color);
-  }
-})
+    const pos = document.createElement("span");
+    pos.innerText = `Coordinates: (${px.coordinates.x + PICTURE_START_POINT.x}:${px.coordinates.y + PICTURE_START_POINT.y}) `;
+    const col = document.createElement("span");
+    col.innerText = `Color: rgba(${px.color.r}, ${px.color.g}, ${px.color.b}, 1)`;
+    pixelInfo.appendChild(pos);
+    pixelInfo.appendChild(col);
+  };
+});
