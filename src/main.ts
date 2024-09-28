@@ -70,6 +70,7 @@ class Application {
   private dragStart: Point = { x: 0, y: 0 };
   private lastTranslate: Point = { x: 0, y: 0 };
   private activePixel: Pixel | null = null;
+  private pinchStartDistance: number | null = null;
   public onActivePixelChange: ((pixel: Pixel | null) => any) | null = null;
 
   constructor(image: HTMLImageElement) {
@@ -120,16 +121,45 @@ class Application {
   }
 
   private applyListeners(): void {
-    window.addEventListener("resize", this.resizeCanvas.bind(this));
-    this.canvas.addEventListener("mousemove", this.onMouseMove.bind(this));
-    this.canvas.addEventListener("wheel", this.onWheel.bind(this));
-    this.canvas.addEventListener("mousedown", this.onMouseDown.bind(this));
-    this.canvas.addEventListener("mouseup", this.onMouseUp.bind(this));
-    this.canvas.addEventListener("mouseleave", this.onMouseUp.bind(this));
-    this.canvas.addEventListener("touchstart", this.onTouchStart.bind(this));
-    this.canvas.addEventListener("touchmove", this.onTouchMove.bind(this));
-    this.canvas.addEventListener("touchend", this.onTouchEnd.bind(this));
+    window.addEventListener('resize', this.resizeCanvas.bind(this));
+
+    this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
+    this.canvas.addEventListener('wheel', this.onWheel.bind(this));
+
+    this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
+    this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
+    this.canvas.addEventListener('mouseleave', this.onMouseUp.bind(this));
+
+    this.canvas.addEventListener('touchstart', this.onTouchStart.bind(this));
+    this.canvas.addEventListener('touchmove', this.onTouchMove.bind(this));
+    this.canvas.addEventListener('touchend', this.onTouchEnd.bind(this));
+    this.canvas.addEventListener('gesturestart', this.onGestureStart.bind(this));
+    this.canvas.addEventListener('gesturechange', this.onGestureChange.bind(this));
+}
+
+
+private onGestureStart(event: any): void {
+  event.preventDefault();
+  this.pinchStartDistance = this.getDistance(event.touches);
+}
+
+private onGestureChange(event: any): void {
+  event.preventDefault();
+  if (this.pinchStartDistance !== null) {
+      const currentDistance = this.getDistance(event.touches);
+      const scaleAmount = currentDistance / this.pinchStartDistance;
+      this.scale *= scaleAmount;
+      this.pinchStartDistance = currentDistance;
+      this.render();
   }
+}
+
+private getDistance(touches: TouchList): number {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
 
   private onMouseMove(event: MouseEvent): void {
     if (this.isDragging) {
@@ -250,7 +280,7 @@ class Application {
 }
 
 const img = new Image();
-img.src = "https://yazmeyaa.github.io/duck_pixel/image.png";
+img.src = "/duck_pixel/image.png";
 
 img.addEventListener("load", () => {
   const app = new Application(img);
