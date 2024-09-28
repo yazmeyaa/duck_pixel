@@ -293,9 +293,9 @@ img.addEventListener("load", () => {
       pixelInfo.innerHTML = "";
       return;
     }
-    const pos = document.createElement("span");
+    const pos = document.createElement("div");
     pos.innerText = `Coordinates: (${px.coordinates.x + PICTURE_START_POINT.x}:${px.coordinates.y + PICTURE_START_POINT.y}) `;
-    const col = document.createElement("span");
+    const col = document.createElement("div");
     col.innerText = `Color: rgba(${px.color.r}, ${px.color.g}, ${px.color.b}, 1)`;
     pixelInfo.appendChild(pos);
     pixelInfo.appendChild(col);
